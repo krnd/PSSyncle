@@ -1,0 +1,18 @@
+{
+    //===========================< Extensions >===============================//
+    //=======| PowerShell (ms-vscode.powershell)
+    "powershell.scriptAnalysis.enable": true,
+    "powershell.codeFormatting.preset": "OTBS",
+    //=======| Code Spell Checker (streetsidesoftware.code-spell-checker)
+    "cSpell.dictionaryDefinitions": [
+        {
+            "name": "pssyncle",
+            "path": "${workspaceFolder}/.cspell/pssyncle.dic",
+        },
+    ],
+    "cSpell.dictionaries": [
+        "pssyncle",
+    ],
+    //========================================================================//
+    "<placeholder>": null
+}
