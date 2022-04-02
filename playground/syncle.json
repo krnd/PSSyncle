@@ -1,0 +1,32 @@
+{
+    "github":{
+        "user": "krnd",
+        "token": "playground/.ghtoken"
+    },
+    "synclets": [
+        {
+            "file": "playground/~sync/result.txt",
+            "source": "filesystem",
+            "path": "playground/templated.txt",
+            "template": {
+                "ramalama": "bingo"
+            }
+        },
+        {
+            "file": "playground/~sync/.flake8",
+            "source": "gist",
+            "gist": "1f3fb6c05af365977e486c47cb7b4a72"
+        },
+        {
+            "file": "playground/~sync/synced_files/nested/profile",
+            "source": "gist",
+            "gist": "3fed19a5cb316dfb6e2637086ec5ae2e"
+        },
+        {
+            "file": "playground/~sync/cpsell.txt",
+            "source": "github",
+            "repo": "krnd/arborister",
+            "cherry": ".cspell/krndlib.txt"
+        }
+    ]
+}
