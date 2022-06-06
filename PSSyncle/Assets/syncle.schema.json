@@ -1,0 +1,107 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/krnd/PSSyncle/main/Assets/syncle.schema.json",
+    "type": "object",
+    "properties": {
+        "github": {
+            "type": "object",
+            "required": [
+                "user",
+                "token"
+            ],
+            "properties": {
+                "user": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 39,
+                    "pattern": "^[a-z0-9]([a-z0-9]|-(?=[a-z0-9]))*$"
+                },
+                "token": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "synclets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "target",
+                    "source"
+                ],
+                "properties": {
+                    "target": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "source": {
+                        "enum": [
+                            "filesystem",
+                            "github",
+                            "gist"
+                        ]
+                    },
+                    "template": {
+                        "type": "object"
+                    }
+                },
+                "oneOf": [
+                    {
+                        "required": [
+                            "path"
+                        ],
+                        "properties": {
+                            "source": {
+                                "const": "filesystem"
+                            },
+                            "path":{
+                                "type":"string",
+                                "minLength": 1
+                            }
+                        }
+                    },
+                    {
+                        "required": [
+                            "repo",
+                            "file"
+                        ],
+                        "properties": {
+                            "source": {
+                                "const": "github"
+                            },
+                            "repo":{
+                                "type":"string",
+                                "minLength": 6,
+                                "pattern": "^[a-z0-9]([a-z0-9]|-(?=[a-z0-9]))*/[a-zA-Z0-9-_\\.]+"
+                            },
+                            "file":{
+                                "type":"string",
+                                "minLength": 1
+                            }
+                        }
+                    },
+                    {
+                        "required": [
+                            "gist"
+                        ],
+                        "properties": {
+                            "source": {
+                                "const": "gist"
+                            },
+                            "gist":{
+                                "type":"string",
+                                "minLength": 1,
+                                "pattern": "^[0-9a-f]+$"
+                            },
+                            "file":{
+                                "type":"string",
+                                "minLength": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
