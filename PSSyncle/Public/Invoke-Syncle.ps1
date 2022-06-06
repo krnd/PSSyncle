@@ -7,7 +7,9 @@ function Invoke-Syncle {
     param (
         [Parameter(Position = 0)]
         [ValidateScript({
-                if (-not (Test-Path $_))
+                if (-not $_)
+                { return $true }
+                elseif (-not (Test-Path $_))
                 { throw "Path '$_' does not exist." }
                 elseif (-not (Test-Path $_ -PathType Leaf))
                 { throw "Path '$_' is no file." }
