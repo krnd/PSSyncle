@@ -9,9 +9,14 @@
             "name": "pssyncle",
             "path": "${workspaceFolder}/.cspell/pssyncle.dic",
         },
+        {
+            "name": "powershell",
+            "path": "${workspaceFolder}/.cspell/powershell.dic",
+        },
     ],
     "cSpell.dictionaries": [
         "pssyncle",
+        "powershell",
     ],
     //========================================================================//
     "<placeholder>": null
