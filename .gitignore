@@ -88,9 +88,12 @@ $RECYCLE.BIN/
 
 # Common patterns
 ~*
-*~*.*
+*~
+*~.*
 
 # Archive folders
 (archive)/
+
 # GitHub token files
+ghtoken
 .ghtoken
