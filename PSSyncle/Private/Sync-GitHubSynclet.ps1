@@ -21,15 +21,23 @@ function Sync-GitHubSynclet {
         -RepositoryName $RepositoryName `
         -Path $Synclet.File
 
-    if ($Synclet.Target.EndsWith("\") -or $Synclet.Target.EndsWith("/")) {
+    if ($Synclet.Target.EndsWith("\") `
+            -or $Synclet.Target.EndsWith("/") `
+            -or (Test-Path $Synclet.Target -PathType Container)) {
+        $TargetPath = $Synclet.Target
         $TargetFile = (Join-Path $Synclet.Target $RemoteFile.name)
+    } else {
+        $TargetPath = (Split-Path $Synclet.Target)
+        $TargetFile = $Synclet.Target
     }
 
-    (New-Item `
-        -Path (Split-Path $TargetFile) `
-        -ItemType Directory `
-        -Force
-    ) | Out-Null
+    if ($TargetPath) {
+        (New-Item `
+            -Path $TargetPath `
+            -ItemType Directory `
+            -Force
+        ) | Out-Null
+    }
     Invoke-WebRequest `
         -Uri $RemoteFile.download_url `
         -OutFile $TargetFile

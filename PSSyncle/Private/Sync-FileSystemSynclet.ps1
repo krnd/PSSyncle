@@ -29,17 +29,23 @@ function Sync-FileSystemSynclet {
             -Force
 
     } else {
-        if ($Synclet.Target.EndsWith("\") -or $Synclet.Target.EndsWith("/")) {
+        if ($Synclet.Target.EndsWith("\") `
+                -or $Synclet.Target.EndsWith("/") `
+                -or (Test-Path $Synclet.Target -PathType Container)) {
+            $TargetPath = $Synclet.Target
             $TargetFile = (Join-Path $Synclet.Target (Split-Path $Synclet.Path -Leaf))
         } else {
+            $TargetPath = (Split-Path $Synclet.Target)
             $TargetFile = $Synclet.Target
         }
 
-        (New-Item `
-            -Path (Split-Path $TargetFile) `
-            -ItemType Directory `
-            -Force
-        ) | Out-Null
+        if ($TargetPath) {
+            (New-Item `
+                -Path $TargetPath `
+                -ItemType Directory `
+                -Force
+            ) | Out-Null
+        }
         Copy-Item `
             -Path $Synclet.Path `
             -Destination $TargetFile `

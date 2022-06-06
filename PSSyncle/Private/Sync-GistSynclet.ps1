@@ -22,7 +22,7 @@ function Sync-GistSynclet {
         -Force
 
     if (-not $Synclet.File) {
-        $FilePath = $null
+        $TargetFile = $null
 
         (New-Item `
             -Path $Synclet.Target `
@@ -40,20 +40,26 @@ function Sync-GistSynclet {
         if (-not (Test-Path $FilePath -PathType Leaf))
         { throw "Error 'Synclet[Gist].File': $($Synclet.File) ($($Synclet.Target))" }
 
-        if ($Synclet.Target.EndsWith("\") -or $Synclet.Target.EndsWith("/")) {
+        if ($Synclet.Target.EndsWith("\")  `
+                -or $Synclet.Target.EndsWith("/") `
+                -or (Test-Path $Synclet.Target -PathType Container)) {
             $TargetPath = $Synclet.Target
+            $TargetFile = (Join-Path $Synclet.Target (Split-Path $FilePath -Leaf))
         } else {
             $TargetPath = (Split-Path $Synclet.Target)
+            $TargetFile = $Synclet.Target
         }
 
-        (New-Item `
-            -Path $TargetPath `
-            -ItemType Directory `
-            -Force
-        ) | Out-Null
+        if ($TargetPath) {
+            (New-Item `
+                -Path $TargetPath `
+                -ItemType Directory `
+                -Force
+            ) | Out-Null
+        }
         Move-Item `
             -Path $FilePath `
-            -Destination $Synclet.Target `
+            -Destination $TargetFile `
             -Force
     }
 
@@ -61,5 +67,5 @@ function Sync-GistSynclet {
         -Path $TempPath.FullName `
         -Recurse `
         -Force
-    return $Synclet.Target
+    return $TargetFile
 }
