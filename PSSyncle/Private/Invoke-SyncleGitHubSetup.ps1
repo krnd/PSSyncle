@@ -3,9 +3,9 @@
 
 
 function Invoke-SyncleGitHubSetup {
-    [CmdletBinding(PositionalBinding = $False)]
+    [CmdletBinding(PositionalBinding = $false)]
     param (
-        [Parameter(Position = 0, Mandatory = $True)]
+        [Parameter(Position = 0, Mandatory = $true)]
         [PSCustomObject]
         $Setup
     )

@@ -3,7 +3,7 @@
 
 
 function Invoke-Syncle {
-    [CmdletBinding(PositionalBinding = $False)]
+    [CmdletBinding(PositionalBinding = $false)]
     param (
         [Parameter(Position = 0)]
         [ValidateScript({
@@ -13,7 +13,7 @@ function Invoke-Syncle {
                 { throw "Path '$_' does not exist." }
                 elseif (-not (Test-Path $_ -PathType Leaf))
                 { throw "Path '$_' is no file." }
-                return $True
+                return $true
             })]
         [System.IO.FileInfo]
         $File
