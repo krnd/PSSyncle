@@ -10,14 +10,19 @@ function Invoke-SyncleGitHubSetup {
         $Setup
     )
 
-    if (-not $Setup.User)
-    { throw "Error 'GitHub.User': $($Setup.User)" }
+    if (-not $Setup.Login)
+    { throw "Error 'GitHub.Login': $($Setup.Login)" }
     if (-not $Setup.Token -or -not (Test-Path $Setup.Token -PathType Leaf))
     { throw "Error 'GitHub.Token': $($Setup.Token)" }
 
-    $SecureString = Get-Content $Setup.Token |
+    if ($Setup.Login.StartsWith("@")) {
+        $LoginName = $Setup.Login.TrimStart("@")
+    } else {
+        $LoginName = (Get-Content $Setup.Login).Trim()
+    }
+    $SecureString = (Get-Content $Setup.Token) |
         ConvertTo-SecureString -AsPlainText -Force
-    $Credential = New-Object $Setup.User, $SecureString `
+    $Credential = New-Object $LoginName, $SecureString `
         -TypeName System.Management.Automation.PSCredential
 
     Set-GitHubAuthentication `
