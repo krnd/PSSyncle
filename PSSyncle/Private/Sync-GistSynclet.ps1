@@ -3,61 +3,63 @@
 
 
 function Sync-GistSynclet {
-    [CmdletBinding(PositionalBinding = $False, DefaultParameterSetName = "Input")]
+    [CmdletBinding(PositionalBinding = $False)]
     param (
-        [Parameter(Position = 0, Mandatory = $True, ParameterSetName = "Synclet")]
+        [Parameter(Position = 0, Mandatory = $True)]
         [PSCustomObject]
-        $Synclet,
-        [Parameter(Position = 0, Mandatory = $True, ParameterSetName = "Input")]
-        [string]
-        $File,
-        [Parameter(Mandatory = $True, ParameterSetName = "Input")]
-        [string]
-        $Gist,
-        [Parameter(Mandatory = $True, ParameterSetName = "Input")]
-        [string]
-        $Path,
-        [Parameter(ParameterSetName = "Synclet")]
-        [switch]
-        $Cache
+        $Synclet
     )
-    if ($Synclet) {
-        if (-not $Synclet.file) { throw "Missing synclet parameter: 'file'"}
-        $File = $Synclet.file
-        if (-not $Synclet.gist) { throw "Missing synclet parameter: 'gist'"}
-        $Gist = $Synclet.gist
-        $Path = if ($Synclet.cherry) { $Synclet.cherry } else { Split-Path $File -Leaf }
-    }
-    if ($Cache) {
-        $FileBase = Split-Path $File
-        $FileName = Split-Path $File -Leaf
-        $File = Join-Path $FileBase "syncle~$FileName"
-    }
+
+    if (-not $Synclet.Gist)
+    { throw "Error 'Synclet[Gist].Gist': $($Synclet.Gist) ($($Synclet.Target))" }
 
     $TempPath = New-Item `
         -Path (Join-Path $env:TEMP (New-Guid).Guid) `
         -ItemType Directory
     Get-GitHubGist `
-        -Gist $Gist `
+        -Gist $Synclet.Gist `
         -Path $TempPath.FullName `
         -Force
 
-    if (Split-Path $File) {
-        New-Item `
-            -Path (Split-Path $File) `
+    if (-not $Synclet.File) {
+        $FilePath = $null
+
+        (New-Item `
+            -Path $Synclet.Target `
             -ItemType Directory `
-            -Force `
-        | Out-Null
+            -Force
+        ) | Out-Null
+        (Get-ChildItem `
+            -Path $TempPath.FullName
+        ) | Move-Item `
+            -Destination $Synclet.Target `
+            -Force
+
+    } else {
+        $FilePath = (Join-Path $TempPath.FullName $Synclet.File)
+        if (-not (Test-Path $FilePath -PathType Leaf))
+        { throw "Error 'Synclet[Gist].File': $($Synclet.File) ($($Synclet.Target))" }
+
+        if ($Synclet.Target.EndsWith("\") -or $Synclet.Target.EndsWith("/")) {
+            $TargetPath = $Synclet.Target
+        } else {
+            $TargetPath = (Split-Path $Synclet.Target)
+        }
+
+        (New-Item `
+            -Path $TargetPath `
+            -ItemType Directory `
+            -Force
+        ) | Out-Null
+        Move-Item `
+            -Path $FilePath `
+            -Destination $Synclet.Target `
+            -Force
     }
-    Copy-Item `
-        -Path (Join-Path $TempPath.FullName $Path) `
-        -Destination $File `
-        -Force
 
     Remove-Item `
-        -Path $TempPath `
+        -Path $TempPath.FullName `
         -Recurse `
         -Force
-
-    return $File
+    return $Synclet.Target
 }

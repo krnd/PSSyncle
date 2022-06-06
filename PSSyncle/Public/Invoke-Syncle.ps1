@@ -6,7 +6,14 @@ function Invoke-Syncle {
     [CmdletBinding(PositionalBinding = $False)]
     param (
         [Parameter(Position = 0)]
-        [string]
+        [ValidateScript({
+                if (-not (Test-Path $_))
+                { throw "Path '$_' does not exist." }
+                elseif (-not (Test-Path $_ -PathType Leaf))
+                { throw "Path '$_' is no file." }
+                return $True
+            })]
+        [System.IO.FileInfo]
         $File
     )
 
@@ -17,43 +24,44 @@ function Invoke-Syncle {
                 ".config"
             )) {
             $File = (Join-Path $SearchPath "syncle.json")
-            if (Test-Path $File)
+            if (Test-Path $File -PathType Leaf)
             { break }
             $File = $null
         }
     }
-    if (-not $File -or -not (Test-Path $File))
-    { throw "Syncle file not found." }
+    if (-not $File -or -not (Test-Path $File -PathType Leaf))
+    { throw "Cannot find synchronization file." }
 
-    $config = Get-Content -Path $File | ConvertFrom-Json
+    $Config = Get-Content $File | ConvertFrom-Json
 
-    if ($config.github) {
-        Invoke-SyncleGitHubAuth `
-            -UserName $config.github.user `
-            -TokenFile $config.github.token
+    if ($Config.GitHub) {
+        Invoke-SyncleGitHubSetup $Config.GitHub
     }
 
-    foreach ($synclet in $config.synclets) {
-        $OutFile = $synclet.file
-        $CacheFile = & "Sync-$($synclet.source)Synclet" $synclet -Cache
+    foreach ($Synclet in $Config.Synclets) {
+        if (-not $Synclet.Target)
+        { throw "Error 'Synclet.Target': <invalid>" }
 
-        if (-not $synclet.template) {
-            Move-Item `
-                -Path $CacheFile `
-                -Destination $OutFile `
-                -Force
+        $Cmdlet = "Sync-$($Synclet.Source)Synclet"
+        if (-not (Get-Command $Cmdlet -ErrorAction SilentlyContinue))
+        { throw "Error 'Synclet.Source': $($Synclet.Source) ($($Synclet.Target))" }
 
-            continue
-        }
+        $TargetFile = & $Cmdlet $Synclet
+
+        if (-not $TargetFile -or -not $Synclet.Template)
+        { continue }
 
         $TemplateParameter = @{}
-        $synclet.template.PSObject.Properties | ForEach-Object {
+        $Synclet.Template.PSObject.Properties | ForEach-Object {
+            if ($_.Name.StartsWith("$"))
+            { return }
             $TemplateParameter[$_.Name] = $_.Value
         }
 
-        ConvertTo-PoshstacheTemplate -InputFile $CacheFile -ParametersObject $TemplateParameter -HashTable | Out-File $OutFile
-        Remove-Item `
-            -Path $CacheFile `
-            -Force
+        (ConvertTo-PoshstacheTemplate `
+            -InputFile $TargetFile `
+            -ParametersObject $TemplateParameter `
+            -HashTable
+        ) | Out-File $TargetFile
     }
 }

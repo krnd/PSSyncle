@@ -2,44 +2,48 @@
 
 
 function Sync-FileSystemSynclet {
-    [CmdletBinding(PositionalBinding = $False, DefaultParameterSetName = "Input")]
+    [CmdletBinding(PositionalBinding = $False)]
     param (
-        [Parameter(Position = 0, Mandatory = $True, ParameterSetName = "Synclet")]
+        [Parameter(Position = 0, Mandatory = $True)]
         [PSCustomObject]
-        $Synclet,
-        [Parameter(Position = 0, Mandatory = $True, ParameterSetName = "Input")]
-        [string]
-        $File,
-        [Parameter(Mandatory = $True, ParameterSetName = "Input")]
-        [string]
-        $Path,
-        [Parameter(ParameterSetName = "Synclet")]
-        [switch]
-        $Cache
+        $Synclet
     )
-    if ($Synclet) {
-        if (-not $Synclet.file) { throw "Missing synclet parameter: 'file'"}
-        $File = $Synclet.file
-        if (-not $Synclet.path) { throw "Missing synclet parameter: 'path'"}
-        $Path = $Synclet.path
-    }
-    if ($Cache) {
-        $FileBase = Split-Path $File
-        $FileName = Split-Path $File -Leaf
-        $File = Join-Path $FileBase "syncle~$FileName"
-    }
 
-    if (Split-Path $File) {
-        New-Item `
-            -Path (Split-Path $File) `
+    if (-not $Synclet.Path -or -not (Test-Path $Synclet.Path))
+    { throw "Error 'Synclet[FileSystem].Path': $($Synclet.Path) ($($Synclet.Target))" }
+
+
+    if (-not (Test-Path $Synclet.Path -PathType Leaf)) {
+        $TargetFile = $null
+
+        (New-Item `
+            -Path $Synclet.Target `
             -ItemType Directory `
-            -Force `
-        | Out-Null
-    }
-    Copy-Item `
-        -Path $Path `
-        -Destination $File `
-        -Force
+            -Force
+        ) | Out-Null
+        (Get-ChildItem `
+            -Path $Synclet.Path
+        ) | Copy-Item `
+            -Destination $Synclet.Target `
+            -Force
 
-    return $File
+    } else {
+        if ($Synclet.Target.EndsWith("\") -or $Synclet.Target.EndsWith("/")) {
+            $TargetFile = (Join-Path $Synclet.Target (Split-Path $Synclet.Path -Leaf))
+        } else {
+            $TargetFile = $Synclet.Target
+        }
+
+        (New-Item `
+            -Path (Split-Path $TargetFile) `
+            -ItemType Directory `
+            -Force
+        ) | Out-Null
+        Copy-Item `
+            -Path $Synclet.Path `
+            -Destination $TargetFile `
+            -Force
+    }
+
+    return $TargetFile
 }

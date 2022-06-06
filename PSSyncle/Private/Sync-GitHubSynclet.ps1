@@ -3,47 +3,36 @@
 
 
 function Sync-GitHubSynclet {
-    [CmdletBinding(PositionalBinding = $False, DefaultParameterSetName = "Input")]
+    [CmdletBinding(PositionalBinding = $False)]
     param (
-        [Parameter(Position = 0, Mandatory = $True, ParameterSetName = "Synclet")]
+        [Parameter(Position = 0, Mandatory = $True)]
         [PSCustomObject]
-        $Synclet,
-        [Parameter(Position = 0, Mandatory = $True, ParameterSetName = "Input")]
-        [string]
-        $File,
-        [Parameter(Mandatory = $True, ParameterSetName = "Input")]
-        [string]
-        $Repository,
-        [Parameter(Mandatory = $True, ParameterSetName = "Input")]
-        [string]
-        $Path,
-        [Parameter(ParameterSetName = "Synclet")]
-        [switch]
-        $Cache
+        $Synclet
     )
-    if ($Synclet) {
-        if (-not $Synclet.file) { throw "Missing synclet parameter: 'file'"}
-        $File = $Synclet.file
-        if (-not $Synclet.repo) { throw "Missing synclet parameter: 'repo'"}
-        $Repository = $Synclet.repo
-        if (-not $Synclet.cherry) { throw "Missing synclet parameter: 'cherry'"}
-        $Path = $Synclet.cherry
-    }
-    if ($Cache) {
-        $FileBase = Split-Path $File
-        $FileName = Split-Path $File -Leaf
-        $File = Join-Path $FileBase "syncle~$FileName"
-    }
 
-    $OwnerName, $RepositoryName = $Repository -split "/"
+    if (-not $Synclet.Repo -or $Synclet.Repo -notlike "*?/?*")
+    { throw "Error 'Synclet[GitHub].Repo': $($Synclet.Repo) ($($Synclet.Target))" }
+    if (-not $Synclet.File)
+    { throw "Error 'Synclet[GitHub].File': $($Synclet.File) ($($Synclet.Target))" }
+
+    $OwnerName, $RepositoryName = $Synclet.Repo -split "/"
     $RemoteFile = Get-GitHubContent `
         -OwnerName $OwnerName `
         -RepositoryName $RepositoryName `
-        -Path $Path
+        -Path $Synclet.File
 
+    if ($Synclet.Target.EndsWith("\") -or $Synclet.Target.EndsWith("/")) {
+        $TargetFile = (Join-Path $Synclet.Target $RemoteFile.name)
+    }
+
+    (New-Item `
+        -Path (Split-Path $TargetFile) `
+        -ItemType Directory `
+        -Force
+    ) | Out-Null
     Invoke-WebRequest `
         -Uri $RemoteFile.download_url `
-        -OutFile $File
+        -OutFile $TargetFile
 
-    return $File
+    return $TargetFile
 }
