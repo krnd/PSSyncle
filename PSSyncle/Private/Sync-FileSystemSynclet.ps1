@@ -25,6 +25,7 @@ function Sync-FileSystemSynclet {
             -Path $Synclet.Path
         ) | Copy-Item `
             -Destination $Synclet.Target `
+            -Recurse `
             -Force
 
     } else {
@@ -42,6 +43,7 @@ function Sync-FileSystemSynclet {
         Copy-Item `
             -Path $Synclet.Path `
             -Destination $TargetFile `
+            -Recurse `
             -Force
     }
 
