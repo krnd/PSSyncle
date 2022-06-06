@@ -1,7 +1,7 @@
 {
-    "$schema": "file:///Users/kilia/Projects/PSSyncle/PSSyncle/Schema/syncle.json",
+    "$schema": "https://raw.githubusercontent.com/krnd/PSSyncle/main/PSSyncle/Assets/syncle.schema.json",
     "github": {
-        "user": "krnd",
+        "login": ".config/ghlogin",
         "token": ".config/ghtoken"
     },
     "synclets": [
