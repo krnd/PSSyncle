@@ -98,5 +98,9 @@ $RECYCLE.BIN/
 ghtoken
 .ghtoken
 
+# GitHub username files
+ghlogin
+.ghlogin
+
 # Test folders
 playground/output/
