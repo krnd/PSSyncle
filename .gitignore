@@ -97,3 +97,6 @@ $RECYCLE.BIN/
 # GitHub token files
 ghtoken
 .ghtoken
+
+# Test folders
+playground/output/

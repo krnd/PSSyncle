@@ -1,32 +1,70 @@
 {
-    "github":{
+    "$schema": "file:///Users/kilia/Projects/PSSyncle/PSSyncle/Schema/syncle.json",
+    "github": {
         "user": "krnd",
-        "token": "playground/.ghtoken"
+        "token": ".config/ghtoken"
     },
     "synclets": [
         {
-            "file": "playground/~sync/result.txt",
-            "source": "filesystem",
-            "path": "playground/templated.txt",
-            "template": {
-                "ramalama": "bingo"
-            }
-        },
-        {
-            "file": "playground/~sync/.flake8",
+            "$comment": "copy all files from gist to folder",
+            "target": "playground/output/gist-folder/",
             "source": "gist",
-            "gist": "1f3fb6c05af365977e486c47cb7b4a72"
+            "gist": "0f09053d9d7571c2e78276046daed992"
         },
         {
-            "file": "playground/~sync/synced_files/nested/profile",
+            "$comment": "copy specific file from gist to folder",
+            "target": "playground/output/gist-file-folder/",
             "source": "gist",
-            "gist": "3fed19a5cb316dfb6e2637086ec5ae2e"
+            "gist": "fb533618e5feaeb2fa14d9fdfd02d3e4",
+            "file": "todo"
         },
         {
-            "file": "playground/~sync/cpsell.txt",
+            "$comment": "copy specific file from gist to file",
+            "target": "playground/output/gist-file-file/rename.ps1",
+            "source": "gist",
+            "gist": "0f09053d9d7571c2e78276046daed992",
+            "file": "god.cli.ps1"
+        },
+        {
+            "$comment": "copy specific file from github repo to folder",
+            "target": "playground/output/github-file-folder/",
             "source": "github",
-            "repo": "krnd/arborister",
-            "cherry": ".cspell/krndlib.txt"
+            "repo": "krnd/synclets",
+            "file": "invoke-build/.build.ps1"
+        },
+        {
+            "$comment": "copy specific file from github repo to file",
+            "target": "playground/output/github-file-file/new-name.ps1",
+            "source": "github",
+            "repo": "krnd/synclets",
+            "file": "invoke-build/.build.ps1"
+        },
+        {
+            "$comment": "copy specific folder from filesystem to folder",
+            "target": "playground/output/filesystem-folder-folder",
+            "source": "filesystem",
+            "path": "playground/test/folder"
+        },
+        {
+            "$comment": "copy specific file from filesystem to folder",
+            "target": "playground/output/filesystem-file-folder/",
+            "source": "filesystem",
+            "path": "playground/test/file.txt"
+        },
+        {
+            "$comment": "copy specific file from filesystem to file",
+            "target": "playground/output/filesystem-file-file/new-name.txt",
+            "source": "filesystem",
+            "path": "playground/test/file.txt"
+        },
+        {
+            "$comment": "template file",
+            "target": "playground/output/template/result.txt",
+            "source": "filesystem",
+            "path": "playground/test/file.txt",
+            "template": {
+                "template_line": "this line was injected"
+            }
         }
     ]
 }
