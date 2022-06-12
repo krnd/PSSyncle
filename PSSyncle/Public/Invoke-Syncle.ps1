@@ -1,5 +1,4 @@
 #Requires -Version 5.1
-#Requires -Modules Poshstache
 
 
 function Invoke-Syncle {
@@ -12,49 +11,30 @@ function Invoke-Syncle {
 
     if (-not $File) {
         foreach ($SearchPath in @(
-                ".",
-                ".syncle",
-                ".config"
-            )) {
+            ".",
+            ".config",
+            ".syncle"
+        )) {
             $File = (Join-Path $SearchPath "syncle.json")
-            if (Test-Path $File -PathType Leaf)
-            { break }
-            $File = $null
+            if (Test-Path $File -PathType Leaf) {
+                break
+            } else {
+                $File = $null
+            }
         }
     }
-    if (-not $File -or -not (Test-Path $File -PathType Leaf))
-    { throw "Cannot find synchronization file." }
+    if (-not $File -or -not (Test-Path $File -PathType Leaf)) {
+        throw "Cannot find syncle file."
+    }
 
-    $Config = Get-Content $File | ConvertFrom-Json
+    $Config = (Get-Content $File -Raw | ConvertFrom-Json)
 
     if ($Config.GitHub) {
         Invoke-SyncleGitHubSetup $Config.GitHub
     }
 
     foreach ($Synclet in $Config.Synclets) {
-        if (-not $Synclet.Target)
-        { throw "Error 'Synclet.Target': <invalid>" }
-
-        $Cmdlet = "Sync-$($Synclet.Source)Synclet"
-        if (-not (Get-Command $Cmdlet -ErrorAction SilentlyContinue))
-        { throw "Error 'Synclet.Source': $($Synclet.Source) ($($Synclet.Target))" }
-
-        $TargetFile = & $Cmdlet $Synclet
-
-        if (-not $TargetFile -or -not $Synclet.Template)
-        { continue }
-
-        $TemplateParameter = @{}
-        $Synclet.Template.PSObject.Properties | ForEach-Object {
-            if ($_.Name.StartsWith("$"))
-            { return }
-            $TemplateParameter[$_.Name] = $_.Value
-        }
-
-        (ConvertTo-PoshstacheTemplate `
-            -InputFile $TargetFile `
-            -ParametersObject $TemplateParameter `
-            -HashTable
-        ) | Out-File $TargetFile
+        Sync-Synclet $Synclet `
+            -Config $Config
     }
 }
