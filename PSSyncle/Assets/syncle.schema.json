@@ -36,8 +36,8 @@
                     "source": {
                         "enum": [
                             "filesystem",
-                            "github",
-                            "gist"
+                            "gist",
+                            "github"
                         ]
                     },
                     "template": {
@@ -61,25 +61,6 @@
                     },
                     {
                         "required": [
-                            "repo",
-                            "file"
-                        ],
-                        "properties": {
-                            "source": {
-                                "const": "github"
-                            },
-                            "repo":{
-                                "type":"string",
-                                "minLength": 1
-                            },
-                            "file":{
-                                "type":"string",
-                                "minLength": 1
-                            }
-                        }
-                    },
-                    {
-                        "required": [
                             "gist"
                         ],
                         "properties": {
@@ -91,7 +72,26 @@
                                 "minLength": 1,
                                 "pattern": "^[0-9a-f]+$"
                             },
-                            "file":{
+                            "path":{
+                                "type":"string",
+                                "minLength": 1
+                            }
+                        }
+                    },
+                    {
+                        "required": [
+                            "repo",
+                            "path"
+                        ],
+                        "properties": {
+                            "source": {
+                                "const": "github"
+                            },
+                            "repo":{
+                                "type":"string",
+                                "minLength": 1
+                            },
+                            "path":{
                                 "type":"string",
                                 "minLength": 1
                             }
