@@ -6,29 +6,51 @@ function Invoke-SyncleGitHubSetup {
     [CmdletBinding(PositionalBinding = $false)]
     param (
         [Parameter(Position = 0, Mandatory = $true)]
+        [ValidateScript({
+            if (-not $_.Login) {
+                throw "Error 'GitHub.Login': <missing>"
+            } elseif (-not $_.Token) {
+                throw "Error 'GitHub.Token': <missing>"
+            }
+            return $true
+        })]
         [PSCustomObject]
         $Setup
     )
 
-    if (-not $Setup.Login)
-    { throw "Error 'GitHub.Login': $($Setup.Login)" }
-    if (-not $Setup.Token -or -not (Test-Path $Setup.Token -PathType Leaf))
-    { throw "Error 'GitHub.Token': $($Setup.Token)" }
-
     if ($Setup.Login.StartsWith("@")) {
-        $LoginName = $Setup.Login.TrimStart("@")
+        $File = $Setup.Login.TrimStart("@")
+        if (-not (Test-Path $File -PathType Leaf)) {
+            throw "Error 'GitHub.Login': $($Setup.Login)"
+        } else {
+            $LoginName = (Get-Content $File).Trim()
+        }
     } else {
-        $LoginName = (Get-Content $Setup.Login).Trim()
+        $LoginName = $Setup.Login
     }
-    $SecureString = (Get-Content $Setup.Token) |
+    if ($Setup.Token.StartsWith("@")) {
+        $File = $Setup.Token.TrimStart("@")
+        if (-not (Test-Path $File -PathType Leaf)) {
+            throw "Error 'GitHub.Token': $($Setup.Token)"
+        } else {
+            $TokenString = (Get-Content $File).Trim()
+        }
+    } else {
+        $TokenString = $Setup.Token
+    }
+
+    $SecureString = $TokenString |
         ConvertTo-SecureString -AsPlainText -Force
     $Credential = New-Object $LoginName, $SecureString `
         -TypeName System.Management.Automation.PSCredential
 
-    Set-GitHubAuthentication `
-        -Credential $Credential `
-        -SessionOnly
-
-    $SecureString = $null
-    $Credential = $null
+    try {
+        Set-GitHubAuthentication `
+            -Credential $Credential `
+            -SessionOnly
+    } finally {
+        $TokenString = $null
+        $SecureString = $null
+        $Credential = $null
+    }
 }
