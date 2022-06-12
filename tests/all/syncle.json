@@ -1,0 +1,100 @@
+{
+    "$schema": "https://raw.githubusercontent.com/krnd/PSSyncle/main/PSSyncle/Assets/syncle.schema.json",
+    "github": {
+        "login": "@~/.config/syncle/ghlogin",
+        "token": "@~/.config/syncle/ghtoken"
+    },
+    "synclets": [
+        {
+            "$comment": "=============< FileSystem >==========================",
+            "target": "output/filesystem-file-folder",
+            "source": "filesystem",
+            "path": "tests/reference/file.txt"
+        },
+        {
+            "target": "output/filesystem-file-file/file_renamed.txt",
+            "source": "filesystem",
+            "path": "tests/reference/file.txt"
+        },
+        {
+            "target": "output/filesystem-folder-folder",
+            "source": "filesystem",
+            "path": "tests/reference/folder"
+        },
+        {
+            "target": "output/filesystem-content-folder",
+            "source": "filesystem",
+            "path": "tests/reference/folder/*"
+        },
+        {
+            "target": "output/filesystem-file-naked.",
+            "source": "filesystem",
+            "path": "tests/reference/file.txt"
+        },
+        {
+            "$comment": "=============< Gist >================================",
+            "target": "output/gist-file-folder",
+            "source": "gist",
+            "gist": "25978d361ecb124265b7519dcf28971b",
+            "path": "file.txt"
+        },
+        {
+            "target": "output/gist-file-file/file_renamed.txt",
+            "source": "gist",
+            "gist": "25978d361ecb124265b7519dcf28971b",
+            "path": "file.txt"
+        },
+        {
+            "target": "output/gist-content-folder",
+            "source": "gist",
+            "gist": "25978d361ecb124265b7519dcf28971b",
+            "path": "*"
+        },
+        {
+            "target": "output/gist-file-naked.",
+            "source": "gist",
+            "gist": "25978d361ecb124265b7519dcf28971b",
+            "path": "file.txt"
+        },
+        {
+            "$comment": "=============< GitHub >==============================",
+            "target": "output/github-file-folder",
+            "source": "github",
+            "repo": "krnd/PSSyncle.SynchronizationTest",
+            "path": "file.txt"
+        },
+        {
+            "target": "output/github-file-file/file_renamed.txt",
+            "source": "github",
+            "repo": "krnd/PSSyncle.SynchronizationTest",
+            "path": "file.txt"
+        },
+        {
+            "target": "output/github-folder-folder",
+            "source": "github",
+            "repo": "krnd/PSSyncle.SynchronizationTest",
+            "path": "folder"
+        },
+        {
+            "target": "output/github-content-folder",
+            "source": "github",
+            "repo": "krnd/PSSyncle.SynchronizationTest",
+            "path": "folder/*"
+        },
+        {
+            "target": "output/github-file-naked.",
+            "source": "github",
+            "repo": "krnd/PSSyncle.SynchronizationTest",
+            "path": "file.txt"
+        },
+        {
+            "$comment": "=============< Template >============================",
+            "target": "output/filesystem-template-poshstache",
+            "source": "filesystem",
+            "path": "tests/reference/poshstache.txt",
+            "template": {
+                "line": "injected-line"
+            }
+        }
+    ]
+}
