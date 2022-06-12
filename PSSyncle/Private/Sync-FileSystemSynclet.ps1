@@ -5,53 +5,62 @@ function Sync-FileSystemSynclet {
     [CmdletBinding(PositionalBinding = $false)]
     param (
         [Parameter(Position = 0, Mandatory = $true)]
+        [ValidateScript({
+            if (-not $_.Path) {
+                throw "Error 'Synclet[FileSystem].Path': <missing> ($($_.Target))"
+            } elseif (-not (Test-Path $_.Path)) {
+                throw "Error 'Synclet[FileSystem].Path': ($($_.Path)) ($($_.Target))"
+            }
+            return $true
+        })]
         [PSCustomObject]
-        $Synclet
+        $Synclet,
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject]
+        $Config
     )
 
-    if (-not $Synclet.Path -or -not (Test-Path $Synclet.Path))
-    { throw "Error 'Synclet[FileSystem].Path': $($Synclet.Path) ($($Synclet.Target))" }
+    $Items = Get-Item `
+        -Path $Synclet.Path
 
-
-    if (-not (Test-Path $Synclet.Path -PathType Leaf)) {
-        $TargetFile = $null
-
-        (New-Item `
-            -Path $Synclet.Target `
-            -ItemType Directory `
-            -Force
-        ) | Out-Null
-        (Get-ChildItem `
-            -Path $Synclet.Path
-        ) | Copy-Item `
-            -Destination $Synclet.Target `
-            -Recurse `
-            -Force
-
+    $Target = $Synclet.Target
+    if (
+        ($Items.Count -ne 1) `
+        -or (($Items.Attributes -band [IO.FileAttributes]::Directory) `
+            -eq [IO.FileAttributes]::Directory) `
+        -or $Target.EndsWith("/") `
+        -or $Target.EndsWith("\")
+    ) {
+        $TargetPath = $Synclet.Target
+    } elseif ($Target.EndsWith(".")) {
+        $Target = $Target.TrimEnd(".")
+        $TargetPath = (Split-Path $Target)
+    } elseif ($Target -like "*?.?*") {
+        $TargetPath = (Split-Path $Target)
     } else {
-        if ($Synclet.Target.EndsWith("\") `
-                -or $Synclet.Target.EndsWith("/") `
-                -or (Test-Path $Synclet.Target -PathType Container)) {
-            $TargetPath = $Synclet.Target
-            $TargetFile = (Join-Path $Synclet.Target (Split-Path $Synclet.Path -Leaf))
-        } else {
-            $TargetPath = (Split-Path $Synclet.Target)
-            $TargetFile = $Synclet.Target
-        }
-
-        if ($TargetPath) {
-            (New-Item `
-                -Path $TargetPath `
-                -ItemType Directory `
-                -Force
-            ) | Out-Null
-        }
-        Copy-Item `
-            -Path $Synclet.Path `
-            -Destination $TargetFile `
-            -Recurse `
-            -Force
+        $TargetPath = $Synclet.Target
     }
 
-    return $TargetFile
+    if ($TargetPath) {
+        New-Item `
+            -Path $TargetPath `
+            -ItemType Directory `
+            -ErrorAction SilentlyContinue `
+            -Force | Out-Null
+    }
+
+    $FileList = @()
+    $FileList += (
+        Copy-Item `
+            -Path $Items `
+            -Destination $Target `
+            -Recurse `
+            -Force `
+            -PassThru
+    ) | Where-Object {
+        ($_.Attributes -band [IO.FileAttributes]::Directory) `
+            -ne [IO.FileAttributes]::Directory
+    }
+
+    return $FileList
 }
