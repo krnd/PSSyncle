@@ -26,4 +26,10 @@ function Sync-Synclet {
     }
 
     $FileList = (& $Synchronizer $Synclet -Config $Config)
+
+    if ($Synclet.Template) {
+        $FileList | ForEach-Object {
+            Invoke-SyncletTemplateEngine $Synclet $_
+        }
+    }
 }
