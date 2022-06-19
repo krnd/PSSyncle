@@ -1,9 +1,15 @@
 {
     //===========================< Extensions >===============================//
     //=======| PowerShell (ms-vscode.powershell)
+    "powershell.startAutomatically": true,
     "powershell.scriptAnalysis.enable": true,
     "powershell.codeFormatting.preset": "OTBS",
+    "powershell.codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
+    "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
+    "powershell.codeFormatting.useCorrectCasing": true,
+    "powershell.codeFormatting.whitespaceBetweenParameters": true,
     //=======| Code Spell Checker (streetsidesoftware.code-spell-checker)
+    "cSpell.enabled": true,
     "cSpell.dictionaryDefinitions": [
         {
             "name": "pssyncle",
@@ -19,5 +25,5 @@
         "powershell",
     ],
     //========================================================================//
-    "<placeholder>": null
+    "<placeholder>": null,
 }
