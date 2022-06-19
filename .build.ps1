@@ -1,49 +1,72 @@
-# cspell:ignore psrepo, psrepository
+#Requires -Version 5.1
 
-TASK .
-TASK setup              setup:psrepository, setup:dependencies
-TASK publish            publish:module
-TASK psrepo             show:psrepository
+# cspell:ignore buildscripts, invokebuild
 
 
-$PSRepository = "PSLocal"
-$PSModuleName = "PSSyncle"
+# ################################ VARIABLES ###################################
+
+$script:InvokeBuildPaths = @(
+    ".",
+    ".invoke",
+    ".invokebuild",
+    "invoke",
+    "invoke-build",
+    "invokebuild"
+)
+
+$script:__InvokeBuild_SetupScripts = @()
 
 
-# ################################ setup #######################################
+# ################################ FUNCTIONS ###################################
 
-TASK setup:dependencies {
-    foreach ($ModuleName in @(
-        # PowerShell wrapper for GitHub API
-        #   https://github.com/microsoft/PowerShellForGitHub
-        "PowerShellForGitHub",
-        # A Powershell implementation of Mustache based on Stubble
-        #   https://github.com/baldator/Poshstache
-        "Poshstache"
-    )) {
-        Install-Module -Name $ModuleName -Scope CurrentUser
-        Update-Module -Name $ModuleName -Force
+function __InvokeBuild_SETUP {
+    [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName = "script")]
+    param (
+        [Parameter(Position = 0, Mandatory = $true, ParameterSetName = "script")]
+        [scriptblock]
+        $Script,
+        [Parameter(Position = 0, Mandatory = $true, ParameterSetName = "execute")]
+        [switch]
+        $ExecuteAll
+
+    )
+    if ($ExecuteAll) {
+        foreach ($Script in $script:__InvokeBuild_SetupScripts) {
+            & $Script
+        }
+        $script:__InvokeBuild_SetupScripts = @()
+    } else {
+        $script:__InvokeBuild_SetupScripts += $Script
     }
-
-    Set-GitHubConfiguration `
-        -DisableTelemetry `
-        -SuppressTelemetryReminder
 }
 
+Set-Alias INVOKEBUILD:SETUP __InvokeBuild_SETUP
 
-# ################################ publish #####################################
 
-TASK publish:module {
-    Publish-Module `
-        -Path (Join-Path "." $PSModuleName) `
-        -Repository $PSRepository `
-        -Force
+# ################################ PLUGINS #####################################
+
+foreach ($SearchPath in $script:InvokeBuildPaths) {
+    if (Test-Path $SearchPath -PathType Container) {
+        Get-ChildItem $SearchPath -Filter "*.plugin.ps1" | ForEach-Object {
+            . $_.FullName
+        }
+    }
 }
 
+INVOKEBUILD:SETUP -ExecuteAll
 
-# ################################ show ########################################
 
-TASK show:psrepository {
-    explorer (Get-PSRepository -Name $PSRepository).SourceLocation
+# ################################ BUILDSCRIPTS ################################
+
+foreach ($SearchPath in $script:InvokeBuildPaths) {
+    if (Test-Path $SearchPath -PathType Container) {
+        Get-ChildItem $SearchPath -Filter "*.build.ps1" | ForEach-Object {
+            if ($_.FullName -eq $MyInvocation.MyCommand.Definition) {
+                return
+            }
+            . $_.FullName
+        }
+    }
 }
 
+INVOKEBUILD:SETUP -ExecuteAll
