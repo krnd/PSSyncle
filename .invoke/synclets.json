@@ -1,0 +1,17 @@
+[
+    {
+        "source": "github:krnd/synclets/invoke-build",
+        "target": ".",
+        "filter": ".build.ps1"
+    },
+    {
+        "source": "github:krnd/synclets/invoke-build",
+        "target": "@",
+        "filter": [
+            "config.plugin.ps1",
+            "datastore.plugin.ps1",
+            "psmodule.build.ps1",
+            "pssyncle.build.ps1"
+        ]
+    }
+]

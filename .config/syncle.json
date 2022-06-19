@@ -1,0 +1,9 @@
+{
+    "$schema": "https://raw.githubusercontent.com/krnd/PSSyncle/main/PSSyncle/Schema/config.schema.json",
+    "github": "@~/.config/pssyncle/github",
+    "files": [
+        ".cspell",
+        ".invoke",
+        "playground"
+    ]
+}

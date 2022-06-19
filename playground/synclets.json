@@ -1,0 +1,7 @@
+[
+    {
+        "source": "github:krnd/synclets/playground",
+        "target": "@playground.ps1",
+        "filter": "powershell.ps1"
+    }
+]

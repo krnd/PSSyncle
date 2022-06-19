@@ -1,0 +1,9 @@
+[
+    {
+        "source": "github:krnd/synclets/cspell",
+        "target": "@",
+        "filter": [
+            "powershell"
+        ]
+    }
+]
