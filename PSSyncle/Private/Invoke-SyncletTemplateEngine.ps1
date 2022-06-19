@@ -1,16 +1,11 @@
 #Requires -Version 5.1
 
 
-function Invoke-SyncletTemplateEngine {
+function PSSyncle::Invoke-SyncletTemplateEngine {
+    [Diagnostics.CodeAnalysis.SuppressMessage("PSUseApprovedVerbs", "")]
     [CmdletBinding(PositionalBinding = $false)]
-    param (
+    param(
         [Parameter(Position = 0, Mandatory = $true)]
-        [ValidateScript({
-            if (-not $_.Template) {
-                throw "Error 'Synclet.Template': <missing>"
-            }
-            return $true
-        })]
         [PSCustomObject]
         $Synclet,
         [Parameter(Position = 1, Mandatory = $true)]
@@ -18,17 +13,17 @@ function Invoke-SyncletTemplateEngine {
         $File
     )
 
-    $TemplateParameter = @{}
+    $Parameters = @{}
     $Synclet.Template.PSObject.Properties | ForEach-Object {
         if ($_.Name.StartsWith("$")) {
             return
         }
-        $TemplateParameter[$_.Name] = $_.Value
+        $Parameters[$_.Name] = $_.Value
     }
 
     (ConvertTo-PoshstacheTemplate `
         -InputFile $File `
-        -ParametersObject $TemplateParameter `
+        -ParametersObject $Parameters `
         -HashTable
     ) | Out-File $File
 }

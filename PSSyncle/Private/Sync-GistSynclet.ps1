@@ -6,77 +6,58 @@ function Sync-GistSynclet {
     [CmdletBinding(PositionalBinding = $false)]
     param (
         [Parameter(Position = 0, Mandatory = $true)]
-        [ValidateScript({
-            if (-not $_.Gist) {
-                throw "Error 'Synclet[Gist].Gist': $($Synclet.Gist) ($($Synclet.Target))"
-            }
-            return $true
-        })]
         [PSCustomObject]
         $Synclet,
         [Parameter(Mandatory = $true)]
-        [PSCustomObject]
-        $Config
+        [string]
+        $Here
     )
 
-    $TempPath = New-Item `
-        -Path (Join-Path $env:TEMP (New-Guid).Guid) `
-        -ItemType Directory
-    Get-GitHubGist `
-        -Gist $Synclet.Gist `
-        -Path $TempPath.FullName `
-        -Force
-
-    if ($Synclet.Path) {
-        $Path = $Synclet.Path
-    } else {
-        $Path = "*"
-    }
-    $Items = Get-Item `
-        -Path (Join-Path $TempPath $Path)
-
-    $Target = $Synclet.Target
-    if (
-        ($Items.Count -ne 1) `
-        -or (($Items.Attributes -band [IO.FileAttributes]::Directory) `
-            -eq [IO.FileAttributes]::Directory) `
-        -or $Target.EndsWith("/") `
-        -or $Target.EndsWith("\")
-    ) {
-        $TargetPath = $Synclet.Target
-    } elseif ($Target.EndsWith(".")) {
-        $Target = $Target.TrimEnd(".")
-        $TargetPath = (Split-Path $Target)
-    } elseif ($Target -like "*?.?*") {
-        $TargetPath = (Split-Path $Target)
-    } else {
-        $TargetPath = $Synclet.Target
+    $Source, $Filter = ((PSSyncle::Split-Source $Synclet) -split "/", 2)
+    try {
+        $GistInfo = Get-GitHubGist `
+            -Gist $Source
+    } catch {
+        throw [System.ArgumentException]::new(
+            "Unable to determine Gist '$Source'.",
+            "Source",
+            $_
+        )
     }
 
-    if ($TargetPath) {
-        New-Item `
-            -Path $TargetPath `
-            -ItemType Directory `
-            -ErrorAction SilentlyContinue `
-            -Force | Out-Null
+    $Filter = (?? $Filter $Synclet.Filter)
+    $RemoteItems = $GistInfo.Files.PSObject.Properties.Value
+    if ($Filter) {
+        $RemoteItems = $RemoteItems | Where-Object {
+            foreach ($Pattern in $Filter) {
+                if ($_.Filename -like $Pattern) {
+                    return $true
+                }
+            }
+            return $false
+        }
     }
+
+    if (-not $RemoteItems) {
+        Write-Warning "Source does not match any items."
+    }
+
+    $Target = PSSyncle::Resolve-Target $Synclet $RemoteItems -Here $Here
+
+    PSSyncle::New-Directory $Target.Path
 
     $FileList = @()
-    $FileList += (
-        Copy-Item `
-            -Path $Items `
-            -Destination $Target `
-            -Recurse `
-            -Force `
-            -PassThru
-    ) | Where-Object {
-        ($_.Attributes -band [IO.FileAttributes]::Directory) `
-            -ne [IO.FileAttributes]::Directory
+    $RemoteItems | ForEach-Object {
+        $OutFile = (Join-Path $Target.Path (?? $Target.File $_.Filename))
+
+        if ($_.Truncated) {
+            PSSyncle::Out-GitHubFile $_.Raw_URL $OutFile
+        } else {
+            $_.Content | Out-File $OutFile
+        }
+
+        $FileList += (Get-Item $OutFile)
     }
 
-    Remove-Item `
-        -Path $TempPath.FullName `
-        -Recurse `
-        -Force
     return $FileList
 }

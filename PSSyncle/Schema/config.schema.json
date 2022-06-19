@@ -1,0 +1,113 @@
+{
+    "$id": "https://raw.githubusercontent.com/krnd/PSSyncle/main/PSSyncle/Schema/config.schema.json",
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "github": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "minLength": 1
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "login",
+                        "token"
+                    ],
+                    "properties": {
+                        "login": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "token": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "synclets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "target",
+                    "source"
+                ],
+                "properties": {
+                    "target": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "source": {
+                        "enum": [
+                            "filesystem",
+                            "gist",
+                            "github"
+                        ]
+                    },
+                    "template": {
+                        "type": "object"
+                    }
+                },
+                "oneOf": [
+                    {
+                        "properties": {
+                            "source": {
+                                "const": "filesystem"
+                            }
+                        }
+                    },
+                    {
+                        "properties": {
+                            "source": {
+                                "const": "gist"
+                            },
+                            "filter": {
+                                "oneOf": [
+                                    {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "properties": {
+                            "source": {
+                                "const": "github"
+                            },
+                            "filter": {
+                                "oneOf": [
+                                    {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

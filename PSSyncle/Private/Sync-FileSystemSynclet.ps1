@@ -5,61 +5,53 @@ function Sync-FileSystemSynclet {
     [CmdletBinding(PositionalBinding = $false)]
     param (
         [Parameter(Position = 0, Mandatory = $true)]
-        [ValidateScript({
-            if (-not $_.Path) {
-                throw "Error 'Synclet[FileSystem].Path': <missing> ($($_.Target))"
-            } elseif (-not (Test-Path $_.Path)) {
-                throw "Error 'Synclet[FileSystem].Path': ($($_.Path)) ($($_.Target))"
-            }
-            return $true
-        })]
         [PSCustomObject]
         $Synclet,
         [Parameter(Mandatory = $true)]
-        [PSCustomObject]
-        $Config
+        [string]
+        $Here
     )
 
-    $Items = Get-Item `
-        -Path $Synclet.Path
-
-    $Target = $Synclet.Target
-    if (
-        ($Items.Count -ne 1) `
-        -or (($Items.Attributes -band [IO.FileAttributes]::Directory) `
-            -eq [IO.FileAttributes]::Directory) `
-        -or $Target.EndsWith("/") `
-        -or $Target.EndsWith("\")
-    ) {
-        $TargetPath = $Synclet.Target
-    } elseif ($Target.EndsWith(".")) {
-        $Target = $Target.TrimEnd(".")
-        $TargetPath = (Split-Path $Target)
-    } elseif ($Target -like "*?.?*") {
-        $TargetPath = (Split-Path $Target)
-    } else {
-        $TargetPath = $Synclet.Target
+    $Source = (PSSyncle::Split-Source $Synclet)
+    try {
+        $Items = Get-Item `
+            -Path $Source
+    } catch {
+        throw [System.ArgumentException]::new(
+            "Unable to determine items from '$Source'.",
+            "Source",
+            $_
+        )
     }
 
-    if ($TargetPath) {
-        New-Item `
-            -Path $TargetPath `
-            -ItemType Directory `
-            -ErrorAction SilentlyContinue `
-            -Force | Out-Null
+    if (-not $Items) {
+        Write-Warning "Source does not match any items."
     }
+
+    $Target = PSSyncle::Resolve-Target $Synclet $Items -Here $Here `
+        -IsDirectory { $_.Attributes -band [IO.FileAttributes]::Directory }
+
+    PSSyncle::New-Directory $Target.Path
 
     $FileList = @()
-    $FileList += (
-        Copy-Item `
-            -Path $Items `
-            -Destination $Target `
-            -Recurse `
-            -Force `
-            -PassThru
-    ) | Where-Object {
-        ($_.Attributes -band [IO.FileAttributes]::Directory) `
-            -ne [IO.FileAttributes]::Directory
+    try {
+        $FileList += (
+            Copy-Item `
+                -Path $Items `
+                -Destination (Join-Path $Target.Path $Target.File) `
+                -Recurse `
+                -Force `
+                -PassThru
+        ) | Where-Object {
+            -not ($_.Attributes -band [IO.FileAttributes]::Directory)
+        }
+    } catch {
+        $Destination = (Join-Path $Target.Path $Target.File)
+        throw [System.ArgumentException]::new(
+            "Unable to copy source items to destination '$Destination'.",
+            "Target",
+            $_
+        )
     }
 
     return $FileList
