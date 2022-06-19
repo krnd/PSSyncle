@@ -7,13 +7,6 @@
             "request": "launch",
             "script": "${workspaceFolder}/playground/playground.ps1",
             "cwd": "${workspaceFolder}"
-        },
-        {
-            "name": "tests:all",
-            "type": "PowerShell",
-            "request": "launch",
-            "script": "${workspaceFolder}/tests/all/runner.ps1",
-            "cwd": "${workspaceFolder}"
         }
     ]
 }
