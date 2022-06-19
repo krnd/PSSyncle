@@ -1,70 +1,8 @@
 {
-    "$schema": "https://raw.githubusercontent.com/krnd/PSSyncle/main/PSSyncle/Assets/syncle.schema.json",
-    "github": {
-        "login": ".config/ghlogin",
-        "token": ".config/ghtoken"
-    },
+    "$schema": "https://raw.githubusercontent.com/krnd/PSSyncle/main/PSSyncle/Schema/config.schema.json",
+    "github": "@~/.config/pssyncle/github",
+    "files": [
+    ],
     "synclets": [
-        {
-            "$comment": "copy all files from gist to folder",
-            "target": "playground/output/gist-folder/",
-            "source": "gist",
-            "gist": "0f09053d9d7571c2e78276046daed992"
-        },
-        {
-            "$comment": "copy specific file from gist to folder",
-            "target": "playground/output/gist-file-folder/",
-            "source": "gist",
-            "gist": "fb533618e5feaeb2fa14d9fdfd02d3e4",
-            "file": "todo"
-        },
-        {
-            "$comment": "copy specific file from gist to file",
-            "target": "playground/output/gist-file-file/rename.ps1",
-            "source": "gist",
-            "gist": "0f09053d9d7571c2e78276046daed992",
-            "file": "god.cli.ps1"
-        },
-        {
-            "$comment": "copy specific file from github repo to folder",
-            "target": "playground/output/github-file-folder/",
-            "source": "github",
-            "repo": "krnd/synclets",
-            "file": "invoke-build/.build.ps1"
-        },
-        {
-            "$comment": "copy specific file from github repo to file",
-            "target": "playground/output/github-file-file/new-name.ps1",
-            "source": "github",
-            "repo": "krnd/synclets",
-            "file": "invoke-build/.build.ps1"
-        },
-        {
-            "$comment": "copy specific folder from filesystem to folder",
-            "target": "playground/output/filesystem-folder-folder",
-            "source": "filesystem",
-            "path": "playground/test/folder"
-        },
-        {
-            "$comment": "copy specific file from filesystem to folder",
-            "target": "playground/output/filesystem-file-folder/",
-            "source": "filesystem",
-            "path": "playground/test/file.txt"
-        },
-        {
-            "$comment": "copy specific file from filesystem to file",
-            "target": "playground/output/filesystem-file-file/new-name.txt",
-            "source": "filesystem",
-            "path": "playground/test/file.txt"
-        },
-        {
-            "$comment": "template file",
-            "target": "playground/output/template/result.txt",
-            "source": "filesystem",
-            "path": "playground/test/file.txt",
-            "template": {
-                "template_line": "this line was injected"
-            }
-        }
     ]
 }

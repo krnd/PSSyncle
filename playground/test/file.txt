@@ -1,3 +1,0 @@
-first line
-{{template_line}}
-last line
