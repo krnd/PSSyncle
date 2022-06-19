@@ -86,21 +86,5 @@ $RECYCLE.BIN/
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
-# Common patterns
-~*
-*~
-*~.*
-
-# Archive folders
-(archive)/
-
-# GitHub token files
-ghtoken
-.ghtoken
-
-# GitHub username files
-ghlogin
-.ghlogin
-
-# Test folders
-playground/output/
+# Playground output
+/output
